@@ -321,7 +321,7 @@ function(record, error, search, runtime) {
 			filterTransaction.push(search.createFilter({ name : 'custcol_sv_expenseaccount', operator : search.Operator.ANYOF, values : expenseaccount }));
 		}
 		if(recordId) {
-			filterTransaction.push(search.createFilter({ name : 'internalid', operator : search.Operator.ANYOF, values : recordId }));
+			filterTransaction.push(search.createFilter({ name : 'internalid', operator : search.Operator.NONEOF, values : recordId }));
 		}
 		
 		var columnTransaction = new Array();
@@ -439,7 +439,7 @@ function(record, error, search, runtime) {
 			filterTransaction.push(search.createFilter({ name : 'custcol_sv_expenseaccount', operator : search.Operator.ANYOF, values : expenseaccount }));
 		}
 		if(recordId) {
-			filterTransaction.push(search.createFilter({ name : 'internalid', operator : search.Operator.ANYOF, values : recordId }));
+			filterTransaction.push(search.createFilter({ name : 'internalid', operator : search.Operator.NONEOF, values : recordId }));
 		}
 		filterTransaction.push(search.createFilter({ name : 'type', operator : search.Operator.ANYOF, values : "PurchReq" }));
 		filterTransaction.push(search.createFilter({ name : 'mainline', operator : search.Operator.IS, values : 'F' }));
