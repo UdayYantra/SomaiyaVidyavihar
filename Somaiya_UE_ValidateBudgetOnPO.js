@@ -2,16 +2,14 @@
  * @NApiVersion 2.x
  * @NScriptType UserEventScript
  * @NModuleScope SameAccount
- * File Name: SAM_ValidateBudgetOnPO_ue.js
- * Script Name: SAM_ValidateBudgetOnPOPR_UE	
+ * File Name: Somaiya_UE_ValidateBudgetOnPO.js
+ * Script Name: Somaiya_UE_ValidateBudgetOnPOPR	
  * Company: Saama Tech. 
  * Date	Created:	09-July-2019.
  * Date	Modified:	
  * Description:	
  **********************************************************/
-define(['N/record', 'N/error', 'N/search', 'N/runtime'],
-
-function(record, error, search, runtime) { 
+define(['N/record', 'N/error', 'N/search', 'N/runtime'], function(record, error, search, runtime) { 
 
 	function afterSubmit(context) {
       	if (context.type === context.UserEventType.DELETE) {
@@ -29,12 +27,18 @@ function(record, error, search, runtime) {
 		var _total = recordObj.getValue({ fieldId: 'totalamount' });
 		var _estimatedtotal = recordObj.getValue({ fieldId: 'estimatedtotal' });
 		var lineItemCount = recordObj.getLineCount({ sublistId: 'item' });
+		var prApprovalStatus = recordObj.getValue({ fieldId: 'custbody_sv_approvalstatuspo' });
+		var poApprovalStatus = recordObj.getValue({ fieldId: 'custbody_sv_approval_status_po' });
 		
 			if(recType === 'purchaseorder') {
-				fetchItemsDetails(lineItemCount, recordObj, subsidiary, department, getclass, _total, recType); 
+				if(Number(poApprovalStatus) == 2) {
+					fetchItemsDetails(lineItemCount, recordObj, subsidiary, department, getclass, _total, recType); 
+				}
 			}
 			else {
-				fetchItemsDetails(lineItemCount, recordObj, subsidiary, department, getclass, _estimatedtotal, recType); 
+				if(Number(prApprovalStatus) == 2) {
+					fetchItemsDetails(lineItemCount, recordObj, subsidiary, department, getclass, _estimatedtotal, recType); 
+				}
 			}
 		
 		recordObj.save({ enableSourcing: true, ignoreMandatoryFields: true });
@@ -297,6 +301,7 @@ function(record, error, search, runtime) {
 		  _actualBudgetAmount = budgetResult[0].getValue({ name: 'amount' });
 		  
 		}
+		log.debug({title: '_actualBudgetAmount', details: _actualBudgetAmount});
 		return _actualBudgetAmount;
 	}
 	
@@ -347,17 +352,17 @@ function(record, error, search, runtime) {
 			var transactionResult = resulttransactionimportSearchObj.getRange({start: Number(st), end: Number(ed)});
 
 			//var _utilizedBudgetAmount = Number(0);
-			var amountToBeAdded = Number(0);
+			//var amountToBeAdded = Number(0);
 
 			if(transactionResult) {
 				var poArray = new Array();
 				for(var a = 0; a < transactionResult.length; a++) {
 					
 					//var type = transactionResult[a].getValue({ name: 'type' });
-					amountToBeAdded = Number(0);
+					var amountToBeAdded = Number(0);
 					//TODO: logic to be rewritten for fetching the amount based on the line item amount of the PO
 					
-					var totalAmount = transactionResult[a].getValue({ name: 'amount', summary: search.Summary.SUM });
+					var totalAmount = transactionResult[a].getValue({ name: 'totalamount', summary: search.Summary.SUM });
 					amountToBeAdded = totalAmount;
 					/*var purchOrdId = transactionResult[a].getValue({ name: 'internalid' });
 
@@ -462,7 +467,7 @@ function(record, error, search, runtime) {
 		var resulttransactionimportSearchObj = transactionimportSearchObj.run();
 
 		var ed = 0;
-
+		var _utilizedBudgetAmount = Number(0);
 		for(var st=ed;st<searchResultCount;st++) {
 			ed = st+999;
 			if(searchResultCount < ed) {
@@ -472,7 +477,7 @@ function(record, error, search, runtime) {
 			var billSearchResultSet = '';
 			var transactionResult = resulttransactionimportSearchObj.getRange({start: Number(st), end: Number(ed)});
 
-			var _utilizedBudgetAmount = Number(0);
+			
 			var amountToBeAdded = Number(0);
 			
 			if(transactionResult) {
